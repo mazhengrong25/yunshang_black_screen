@@ -2,7 +2,7 @@
  * @Description: 日志查询
  * @Author: mzr
  * @Date: 2021-11-04 16:52:11
- * @LastEditTime: 2021-11-09 16:30:29
+ * @LastEditTime: 2021-11-10 11:45:27
  * @LastEditors: mzr
 -->
 <template>
@@ -194,13 +194,9 @@ export default {
                     this.tableLoading = false
 
                 }else {
-                    // this.router.go(-1);
+                   
                 }
-                // else if(res.status === 5) {
-                //     this.router.go(-1);
-                // }else {
-                    
-                // }
+               
             })
             .catch((e) => {
                 window.location.href = '/'
@@ -230,6 +226,8 @@ export default {
         // 搜索筛选
         goSearch() {
             this.logList = []
+            this.nextMessage.id = ''            //类型：String  可有字段  备注：起始ID(用于翻页查询)
+            this.nextMessage.dateFlag = 0
             this.getQuery();
         },
 
