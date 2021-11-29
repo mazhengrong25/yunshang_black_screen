@@ -2,7 +2,7 @@
  * @Description: 日志查询
  * @Author: mzr
  * @Date: 2021-11-04 16:52:11
- * @LastEditTime: 2021-11-10 11:45:27
+ * @LastEditTime: 2021-11-29 10:03:13
  * @LastEditors: mzr
 -->
 <template>
@@ -20,9 +20,25 @@
                 </div>
 
                 <div class="table_action_item">
+                    <p>数据类型：</p>
+                    <div class="item_select">
+                        <v-select label="所有" solo :items="selectDataType" v-model="searchItem.DataType" clearable>
+
+                        </v-select>
+                    </div>
+                </div>
+
+                <div class="table_action_item">
                     <p>数据值：</p>
                     <div class="item_select">
                         <v-text-field label="数据值" clearable solo v-model="searchItem.DataKey"></v-text-field>
+                    </div>
+                </div>
+
+                <div class="table_action_item">
+                    <p>日志状态：</p>
+                    <div class="item_select">
+                        <v-select label="所有" solo :items="selectLogStatus" v-model="searchItem.LogStatus" clearable></v-select>
                     </div>
                 </div>
 
@@ -34,68 +50,31 @@
                 </div>
 
                 <div class="table_action_item">
-                    <p>数据类型：</p>
+                    <p>开始时间：</p>
                     <div class="item_select">
-                        <v-text-field label="数据类型" clearable solo v-model="searchItem.DataType"></v-text-field>
+                        <v-menu :close-on-content-click="true" nudge-top="25" transition="scale-transition" offset-y min-width="auto">
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-text-field label="开始时间" solo v-model="searchItem.StartTime" v-bind="attrs" v-on="on" clearable></v-text-field>
+                            </template>
+                            <v-date-picker locale="zh-cn" v-model="searchItem.StartTime"></v-date-picker>
+                        </v-menu>
                     </div>
                 </div>
 
                 <div class="table_action_item">
-                    <p>开始时间：</p>
-                    <div class="item_select">
-                        <v-menu
-                            :close-on-content-click="true"
-                            nudge-top="25"
-                            transition="scale-transition"
-                            offset-y
-                            min-width="auto"
-                        >
-                            <template v-slot:activator="{ on, attrs }">
-                            <v-text-field
-                                label="开始时间"
-                                solo
-                                v-model="searchItem.StartTime"
-                                v-bind="attrs"
-                                v-on="on"
-                                clearable
-                            ></v-text-field>
-                            </template>
-                            <v-date-picker
-                                locale="zh-cn"
-                                v-model="searchItem.StartTime"
-                            ></v-date-picker>
-                        </v-menu>
-                    </div>
-                </div>
-                
-                <div class="table_action_item">
                     <p>结束时间：</p>
                     <div class="item_select">
-                        <v-menu
-                            :close-on-content-click="true"
-                            nudge-top="25"
-                            transition="scale-transition"
-                            offset-y
-                            min-width="auto"
-                        >
+                        <v-menu :close-on-content-click="true" nudge-top="25" transition="scale-transition" offset-y min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
-                            <v-text-field
-                                label="结束时间"
-                                solo
-                                v-model="searchItem.EndTime"
-                                v-bind="attrs"
-                                v-on="on"
-                                clearable
-                            ></v-text-field>
+                                <v-text-field label="结束时间" solo v-model="searchItem.EndTime" v-bind="attrs" v-on="on" clearable></v-text-field>
                             </template>
-                            <v-date-picker
-                                locale="zh-cn"
-                                v-model="searchItem.EndTime"
-                            ></v-date-picker>
+                            <v-date-picker locale="zh-cn" v-model="searchItem.EndTime"></v-date-picker>
                         </v-menu>
                     </div>
                 </div>
-                <div class="table_action_item"><v-btn @click="goSearch()" color="primary" depressed class="searchBtn">搜索</v-btn></div>
+                <div class="table_action_item">
+                    <v-btn @click="goSearch()" color="primary" depressed class="searchBtn">搜索</v-btn>
+                </div>
             </div>
             <v-data-table height="650" :headers="headers" item-key="id" fixed-header :items-per-page="-1" :items="logList" hide-default-footer :loading="tableLoading" loading-text="加载中..." class="table_class" :disable-sort="true">
                 <template v-slot:item.category="{ item }">{{ item.category === 1 ?'IBE':'ETerm' }}</template>
@@ -106,10 +85,15 @@
                 <template v-slot:item.endTime="{ item }">{{ $moment(item.endTime).format('YYYY-MM-DD HH:mm:ss') }}</template>
                 <template v-slot:item.dataType="{ item }">{{ item.dataType ? item.dataType:'-' }}</template>
                 <template v-slot:item.dataKey="{ item }">{{ item.dataKey ? item.dataKey:'-' }}</template>
-                
+                <template v-slot:item.logState="{ item }">
+                    <v-chip :color="getColor(item.logState)" dark>
+                        {{ item.logState }}
+                    </v-chip>
+                </template>
+
             </v-data-table>
             <!-- 表格加载 -->
-            <v-btn  class="table_loading"  @click="nextBtn" :loading="tableLoading" v-if="logList.length > 0">载入更多</v-btn>
+            <v-btn class="table_loading" @click="nextBtn" :loading="tableLoading" v-if="logList.length > 0">载入更多</v-btn>
             <!-- 日志详情 -->
             <v-dialog v-model="dialog" width="1000" transition="dialog-bottom-transition">
                 <json-view :data="jsonData" />
@@ -134,6 +118,7 @@ export default {
             { text: '数据值', value: 'dataKey' },
             { text: 'API类别', value: 'category' },
             { text: 'IP地址', value: 'ip' },
+            { text: '日志状态', value: 'logState' },
             { text: '接口名称', value: 'apiName' },
             { text: '开始时间', value: 'startTime' },
             { text: '截止时间', value: 'endTime' },
@@ -147,22 +132,27 @@ export default {
         jsonData: {}, // 日志详情
 
         nextStatus: false, // 下一页按钮
+        // 翻页查找
         nextMessage: {
             id: '',
             dateFlag: 0
         },
         // 筛选条件
-        searchItem:{
-            User:"",
-            ApiName:"",
-            DataKey:"",
-            DataType:"",
+        searchItem: {
+            User: "",
+            ApiName: "",
+            DataKey: "",
+            DataType: "",
             StartTime: "",
-            EndTime:"",
-            EndTime:""
+            EndTime: "",
+            EndTime: "",
+            LogStatus: ""
         },
-        menu:true,
-        
+
+        selectDataType: [], // 筛选条件 数据类型
+        selectLogStatus: [], // 筛选条件  日志状态
+
+
     }),
     methods: {
         // 列表数据
@@ -177,29 +167,63 @@ export default {
                 EndTime: this.searchItem.EndTime,
                 User: this.searchItem.User,                //类型：String  可有字段  备注：App用户
                 ApiName: this.searchItem.ApiName,                //类型：String  可有字段  备注：接口名称
-                DataType: this.searchItem.DataType,                //类型：String  可有字段  备注：数据类型
-                DataKey: this.searchItem.DataKey               //类型：String  可有字段  备注：数据值
+                DataType: this.searchItem.DataType || '',                //类型：String  可有字段  备注：数据类型
+                DataKey: this.searchItem.DataKey,            //类型：String  可有字段  备注：数据值
+                LogState: this.searchItem.LogStatus || '' // 日志状态
             }
             this.$axios.post("webApi/logProcess/query", data).then((res) => {
                 if (res.status === 0) {
 
                     this.logPageMessage = res.data
                     if (this.logList.length > 0) {
-                        this.logList = [...this.logList,...res.data.datas]
+                        this.logList = [...this.logList, ...res.data.datas]
                     } else {
                         this.logList = res.data.datas
                     }
-                    console.log('this.logList',this.logList)
+                    console.log('this.logList', this.logList)
                     this.nextStatus = res.data.datas.length > 0
                     this.tableLoading = false
 
-                }else {
-                   
+                } else {
+
                 }
-               
+
             })
-            .catch((e) => {
-                window.location.href = '/'
+                .catch((e) => {
+                    window.location.href = '/'
+                })
+        },
+
+        // 获取数据类型
+        getLogType() {
+            let data = {
+                src: "LogDataType"
+            }
+            this.$axios.get("webapi/page/GetDataMappings", { params: data }).then((res) => {
+                if (res.status === 0) {
+                    res.data.forEach((item) => {
+                        this.selectDataType.push(item.data_code)
+                    })
+                } else {
+
+                }
+            })
+        },
+
+        // 获取日志状态
+        getLogStatus() {
+            let data = {
+                src: "LogState"
+            }
+            this.$axios.get("webapi/page/GetDataMappings", { params: data }).then((res) => {
+                if (res.status === 0) {
+                    res.data.forEach((item) => {
+                        this.selectLogStatus.push(item.data_code)
+                    })
+                } else {
+
+                }
+
             })
         },
 
@@ -226,16 +250,27 @@ export default {
         // 搜索筛选
         goSearch() {
             this.logList = []
-            this.nextMessage.id = ''            //类型：String  可有字段  备注：起始ID(用于翻页查询)
+            this.nextMessage.id = ''
             this.nextMessage.dateFlag = 0
             this.getQuery();
         },
 
-    
+        // 表格 日志状态处理
+        getColor(calories) {
+            if (calories === "fail") return 'red'
+            else if (calories === "success") return 'green'
+            else return 'orange'
+        },
+
     },
     created() {
-        this.searchItem.StartTime = this.$moment().subtract(1,'months').format("YYYY-MM-DD")
-        this.getQuery()
+        this.searchItem.StartTime = this.$moment().format("YYYY-MM-DD")
+        // 查询列表
+        this.getQuery();
+        // 获取数据类型
+        this.getLogType();
+        // 获取日志状态
+        this.getLogStatus();
     }
 }
 </script>
