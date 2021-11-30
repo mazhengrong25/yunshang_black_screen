@@ -2,7 +2,7 @@
  * @Description: 
  * @Author: mzr
  * @Date: 2021-11-04 11:40:12
- * @LastEditTime: 2021-11-09 16:22:01
+ * @LastEditTime: 2021-11-29 14:36:34
  * @LastEditors: mzr
 -->
 <template>
@@ -15,24 +15,19 @@
             </div>
 
             <div class="home_content">
-                <v-form ref="form" v-model="valid" lazy-validation class="home_form">
+                <v-form ref="form" v-model="valid" lazy-validation class="home_form" @keydown.enter.native="keyEvent()">
                     <v-text-field class="home_input" v-model="name" :rules="nameRules" label="用户名" solo></v-text-field>
                     <v-text-field class="home_input" v-model="password" :rules="psRules" label="密码" :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'" :type="show1 ? 'text' : 'password'" @click:append="show1 = !show1" solo></v-text-field>
 
+                    <!-- <v-btn :disabled="!valid" @click="validate">登陆</v-btn> -->
                     <v-btn :disabled="!valid" @click="validate">登陆</v-btn>
-                    <v-btn  @click="reset">重置</v-btn>
-                    <v-alert
-                        class="home_alert"
-                        dense
-                        outlined
-                        type="error"
-                        v-model="alert"
-                    >{{messageInfo}}</v-alert>
+
+                    <v-btn @click="reset">重置</v-btn>
+                    <v-alert class="home_alert" dense outlined type="error" v-model="alert">{{messageInfo}}</v-alert>
                 </v-form>
             </div>
         </div>
-   
-    
+
     </div>
 
 </template>
@@ -58,11 +53,13 @@ export default {
             status: false, // 接口状态
 
             alert: false, // 提示框状态
-            messageInfo:"", // 提示框内容
+            messageInfo: "", // 提示框内容
         }
     },
     methods: {
+        // 登陆
         validate() {
+
             if (this.$refs.form.validate()) {
                 let data = {
                     UserName: this.name,
@@ -77,17 +74,24 @@ export default {
                             name: 'Log',
                             path: "/log",
                         });
-                    }else {
+                    } else {
                         this.alert = true
                         this.messageInfo = res.message
                     }
-                   
+
 
                 })
             }
 
-
         },
+        // 监听键盘
+        keyEvent() {
+            var key = window.event.keyCode
+            if (key === 13) {
+                this.validate();
+            }
+        },
+        // 重置
         reset() {
             this.$refs.form.reset()
             this.alert = false

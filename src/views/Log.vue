@@ -2,7 +2,7 @@
  * @Description: 日志查询
  * @Author: mzr
  * @Date: 2021-11-04 16:52:11
- * @LastEditTime: 2021-11-29 10:03:13
+ * @LastEditTime: 2021-11-30 13:59:11
  * @LastEditors: mzr
 -->
 <template>
@@ -15,14 +15,14 @@
                 <div class="table_action_item">
                     <p>App用户：</p>
                     <div class="item_select">
-                        <v-text-field label="用户名" clearable solo v-model="searchItem.User"></v-text-field>
+                        <v-text-field label="用户名" clearable v-model="searchItem.User"></v-text-field>
                     </div>
                 </div>
 
                 <div class="table_action_item">
                     <p>数据类型：</p>
                     <div class="item_select">
-                        <v-select label="所有" solo :items="selectDataType" v-model="searchItem.DataType" clearable>
+                        <v-select label="所有" :items="selectDataType" v-model="searchItem.DataType" clearable>
 
                         </v-select>
                     </div>
@@ -31,52 +31,54 @@
                 <div class="table_action_item">
                     <p>数据值：</p>
                     <div class="item_select">
-                        <v-text-field label="数据值" clearable solo v-model="searchItem.DataKey"></v-text-field>
+                        <v-text-field label="数据值" clearable v-model="searchItem.DataKey"></v-text-field>
                     </div>
                 </div>
 
                 <div class="table_action_item">
                     <p>日志状态：</p>
                     <div class="item_select">
-                        <v-select label="所有" solo :items="selectLogStatus" v-model="searchItem.LogStatus" clearable></v-select>
+                        <v-select label="所有" :items="selectLogStatus" v-model="searchItem.LogStatus" clearable></v-select>
                     </div>
                 </div>
 
                 <div class="table_action_item">
                     <p>接口名称：</p>
                     <div class="item_select">
-                        <v-text-field label="接口名称" clearable solo v-model="searchItem.ApiName"></v-text-field>
+                        <v-text-field label="接口名称" clearable v-model="searchItem.ApiName"></v-text-field>
                     </div>
                 </div>
 
                 <div class="table_action_item">
                     <p>开始时间：</p>
                     <div class="item_select">
-                        <v-menu :close-on-content-click="true" nudge-top="25" transition="scale-transition" offset-y min-width="auto">
+                        <!-- <v-menu :close-on-content-click="false" nudge-top="25" transition="scale-transition" offset-y min-width="auto" v-model="dateMenu">
                             <template v-slot:activator="{ on, attrs }">
                                 <v-text-field label="开始时间" solo v-model="searchItem.StartTime" v-bind="attrs" v-on="on" clearable></v-text-field>
                             </template>
-                            <v-date-picker locale="zh-cn" v-model="searchItem.StartTime"></v-date-picker>
-                        </v-menu>
+                        </v-menu> -->
+                        <v-datetime-picker v-model="searchItem.StartTime" label="开始时间"></v-datetime-picker>
+
                     </div>
                 </div>
 
                 <div class="table_action_item">
                     <p>结束时间：</p>
                     <div class="item_select">
-                        <v-menu :close-on-content-click="true" nudge-top="25" transition="scale-transition" offset-y min-width="auto">
+                        <!-- <v-menu :close-on-content-click="true" nudge-top="25" transition="scale-transition" offset-y min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
                                 <v-text-field label="结束时间" solo v-model="searchItem.EndTime" v-bind="attrs" v-on="on" clearable></v-text-field>
                             </template>
-                            <v-date-picker locale="zh-cn" v-model="searchItem.EndTime"></v-date-picker>
-                        </v-menu>
+                        </v-menu> -->
+                        <v-datetime-picker v-model="searchItem.EndTime" label="结束时间"></v-datetime-picker>
+
                     </div>
                 </div>
                 <div class="table_action_item">
                     <v-btn @click="goSearch()" color="primary" depressed class="searchBtn">搜索</v-btn>
                 </div>
             </div>
-            <v-data-table height="650" :headers="headers" item-key="id" fixed-header :items-per-page="-1" :items="logList" hide-default-footer :loading="tableLoading" loading-text="加载中..." class="table_class" :disable-sort="true">
+            <v-data-table height="600" :headers="headers" item-key="id" fixed-header :items-per-page="-1" :items="logList" hide-default-footer :loading="tableLoading" loading-text="加载中..." class="table_class" :disable-sort="true">
                 <template v-slot:item.category="{ item }">{{ item.category === 1 ?'IBE':'ETerm' }}</template>
                 <template v-slot:item.process="{ item }">
                     <v-btn @click="openJSON(item)" color="primary" depressed>打开日志详情</v-btn>
@@ -152,6 +154,11 @@ export default {
         selectDataType: [], // 筛选条件 数据类型
         selectLogStatus: [], // 筛选条件  日志状态
 
+        // 时间选择器
+        // timePicker: {
+        //     startTime: "",
+        //     endTime: ""
+        // },
 
     }),
     methods: {
@@ -162,7 +169,6 @@ export default {
                 Id: this.nextMessage.id,                //类型：String  可有字段  备注：起始ID(用于翻页查询)
                 DateFlag: this.nextMessage.dateFlag,                //类型：Number  可有字段  备注：起始时间标签(用于翻页查询)
                 Limit: 10,                //类型：Number  必有字段  备注：每页显示条数
-                // StartTime: this.$moment().subtract(1,'months').format("YYYY-MM-DD"),               //类型：String  必有字段  备注：开始时间 yyyy-MM-dd HH:mm:ss
                 StartTime: this.searchItem.StartTime,
                 EndTime: this.searchItem.EndTime,
                 User: this.searchItem.User,                //类型：String  可有字段  备注：App用户
@@ -252,6 +258,10 @@ export default {
             this.logList = []
             this.nextMessage.id = ''
             this.nextMessage.dateFlag = 0
+
+            this.searchItem.StartTime = this.searchItem.StartTime ? this.$moment(this.searchItem.StartTime).format('YYYY-MM-DD HH:mm:ss') : this.searchItem.StartTime
+            this.searchItem.EndTime = this.searchItem.EndTime ? this.$moment(this.searchItem.EndTime).format('YYYY-MM-DD HH:mm:ss') : this.searchItem.EndTime
+
             this.getQuery();
         },
 
