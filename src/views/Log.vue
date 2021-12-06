@@ -2,7 +2,7 @@
  * @Description: 日志查询
  * @Author: mzr
  * @Date: 2021-11-04 16:52:11
- * @LastEditTime: 2021-11-30 13:59:11
+ * @LastEditTime: 2021-12-06 14:11:29
  * @LastEditors: mzr
 -->
 <template>
@@ -147,19 +147,11 @@ export default {
             DataType: "",
             StartTime: "",
             EndTime: "",
-            EndTime: "",
             LogStatus: ""
         },
 
         selectDataType: [], // 筛选条件 数据类型
         selectLogStatus: [], // 筛选条件  日志状态
-
-        // 时间选择器
-        // timePicker: {
-        //     startTime: "",
-        //     endTime: ""
-        // },
-
     }),
     methods: {
         // 列表数据
@@ -169,7 +161,7 @@ export default {
                 Id: this.nextMessage.id,                //类型：String  可有字段  备注：起始ID(用于翻页查询)
                 DateFlag: this.nextMessage.dateFlag,                //类型：Number  可有字段  备注：起始时间标签(用于翻页查询)
                 Limit: 10,                //类型：Number  必有字段  备注：每页显示条数
-                StartTime: this.searchItem.StartTime,
+                StartTime: this.searchItem.StartTime || this.$moment().format("YYYY-MM-DD HH:mm"),
                 EndTime: this.searchItem.EndTime,
                 User: this.searchItem.User,                //类型：String  可有字段  备注：App用户
                 ApiName: this.searchItem.ApiName,                //类型：String  可有字段  备注：接口名称
@@ -190,8 +182,6 @@ export default {
                     this.nextStatus = res.data.datas.length > 0
                     this.tableLoading = false
 
-                } else {
-
                 }
 
             })
@@ -210,8 +200,6 @@ export default {
                     res.data.forEach((item) => {
                         this.selectDataType.push(item.data_code)
                     })
-                } else {
-
                 }
             })
         },
@@ -226,8 +214,6 @@ export default {
                     res.data.forEach((item) => {
                         this.selectLogStatus.push(item.data_code)
                     })
-                } else {
-
                 }
 
             })
@@ -274,7 +260,7 @@ export default {
 
     },
     created() {
-        this.searchItem.StartTime = this.$moment().format("YYYY-MM-DD")
+        this.searchItem.StartTime = this.$moment().format("YYYY-MM-DD HH:mm")
         // 查询列表
         this.getQuery();
         // 获取数据类型
